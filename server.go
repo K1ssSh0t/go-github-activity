@@ -1,6 +1,7 @@
 
 package main
 
+// Import necessary packages
 import (
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"time"
 )
 
+// Event struct to represent a GitHub event
 type Event struct {
 	Type      string    `json:"type"`
 	Repo      Repo      `json:"repo"`
@@ -17,40 +19,50 @@ type Event struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Repo struct to represent a GitHub repository
 type Repo struct {
 	Name string `json:"name"`
 }
 
+// Payload struct to represent the payload of an event
 type Payload struct {
 	Commits []Commit `json:"commits"`
 	Action  string   `json:"action"`
 	Issue   Issue    `json:"issue"`
 }
 
+// Commit struct to represent a commit
 type Commit struct {
 	Message string `json:"message"`
 }
 
+// Issue struct to represent an issue
 type Issue struct {
 	Title string `json:"title"`
 }
 
+// main function: entry point of the program
 func main() {
+	// Check if a username is provided as a command-line argument
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <username>")
 		return
 	}
 
+	// Get the username from the command-line arguments
 	username := os.Args[1]
+	// Fetch GitHub activity for the given username
 	events, err := fetchGitHubActivity(username)
+	// Handle any errors during the fetch process
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-
+	// Display the fetched activity
 	displayActivity(events)
 }
 
+// fetchGitHubActivity function: fetches GitHub activity for a given username
 func fetchGitHubActivity(username string) ([]Event, error) {
 	url := fmt.Sprintf("https://api.github.com/users/%s/events", username)
 	resp, err := http.Get(url)
@@ -68,12 +80,14 @@ func fetchGitHubActivity(username string) ([]Event, error) {
 		return nil, err
 	}
 
+	// Unmarshal the JSON response into the events slice
 	var events []Event
 	err = json.Unmarshal(body, &events)
 	if err != nil {
 		return nil, err
 	}
 
+	// Return the events
 	return events, nil
 }
 
@@ -82,6 +96,7 @@ func displayActivity(events []Event) {
 		fmt.Println("No activity found for this user.")
 		return
 	}
+	// Iterate over each event and display it
 	for _, event := range events {
 		date := event.CreatedAt.Format("2006-01-02 15:04")
 
